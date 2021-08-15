@@ -1,0 +1,15 @@
+application:
+  name: example
+  version: v1.0.0
+  environment: example
+
+observability:
+  logging:
+    level: DEBUG
+  metrics:
+    prometheus: 8888
+  tracing:
+    jaeger: http://localhost:14268/api/traces
+
+subscriber: kafka://localhost:9092?group=example-v1&offset=oldest
+publisher: kafka://localhost:9092?group=example-v1&offset=oldest
