@@ -26,6 +26,16 @@ var otelOptions = fx.Options(
 	fx.Invoke(PrometheusExporter),
 )
 
+type Observability struct {
+	Logging Logging `yaml:"logging"`
+	Metrics Metrics `yaml:"metrics"`
+	Tracing Tracing `yaml:"tracing"`
+}
+
+type Tracing struct {
+	Jaeger string `yaml:"jaeger"`
+}
+
 func TracerProviderJaeger(lc fx.Lifecycle, resource *resource.Resource, cfg Tracing) error {
 	// Create the Jaeger exporter
 	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(cfg.Jaeger)))
@@ -50,6 +60,10 @@ func TracerProviderJaeger(lc fx.Lifecycle, resource *resource.Resource, cfg Trac
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
 	return nil
+}
+
+type Metrics struct {
+	Prometheus int `yaml:"prometheus" validate:"required"`
 }
 
 func PrometheusExporter(lc fx.Lifecycle, resource *resource.Resource, cfg Metrics) error {

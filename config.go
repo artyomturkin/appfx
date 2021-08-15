@@ -13,38 +13,11 @@ import (
 )
 
 type config struct {
-	Application   application   `yaml:"application"   validate:"required"`
-	Observability observability `yaml:"observability" validate:"required"`
+	Application   Application   `yaml:"application"   validate:"required"`
+	Observability Observability `yaml:"observability" validate:"required"`
 
 	Subscriber string `yaml:"subscriber"`
 	Publisher  string `yaml:"publisher"`
-}
-
-type application struct {
-	Name        string `yaml:"name"        validate:"required"`
-	Version     string `yaml:"version"     validate:"required"`
-	Namespace   string `yaml:"namespace"   validate:"required"`
-	Environment string `yaml:"environment" validate:"required"`
-}
-
-type observability struct {
-	Logging Logging `yaml:"logging"`
-	Metrics Metrics `yaml:"metrics"`
-	Tracing Tracing `yaml:"tracing"`
-}
-
-type Logging struct {
-	Level       string `yaml:"level"`
-	SystemLevel string `yaml:"system_level"`
-	JSON        bool   `yaml:"json"`
-}
-
-type Metrics struct {
-	Prometheus int `yaml:"prometheus" validate:"required"`
-}
-
-type Tracing struct {
-	Jaeger string `yaml:"jaeger"`
 }
 
 func parseConfig() (config, error) {
@@ -65,7 +38,7 @@ func parseConfig() (config, error) {
 	return conf, nil
 }
 
-func appToResource(ctx context.Context, app application) (*resource.Resource, error) {
+func appToResource(ctx context.Context, app Application) (*resource.Resource, error) {
 	return resource.New(ctx,
 		resource.WithFromEnv(),
 		resource.WithProcess(),

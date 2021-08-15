@@ -8,6 +8,12 @@ import (
 	"go.uber.org/fx"
 )
 
+type Logging struct {
+	Level       string `yaml:"level"`
+	SystemLevel string `yaml:"system_level"`
+	JSON        bool   `yaml:"json"`
+}
+
 func provideHCLLogger(config Logging) hclog.Logger {
 	level := hclog.Info
 

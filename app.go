@@ -9,3 +9,10 @@ var Module = fx.Options(
 	loggingOptions,
 	routerOptions,
 )
+
+type Application struct {
+	Name        string `yaml:"name"        validate:"required"`
+	Version     string `yaml:"version"     validate:"required"`
+	Namespace   string `yaml:"namespace"   validate:"required"`
+	Environment string `yaml:"environment" validate:"required"`
+}
