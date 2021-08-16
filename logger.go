@@ -29,13 +29,13 @@ var loggingOptions = fx.Options(
 	}),
 )
 
-type Logging struct {
+type logging struct {
 	Level       string `yaml:"level"`
 	SystemLevel string `yaml:"system_level"`
 	JSON        bool   `yaml:"json"`
 }
 
-var defaultLogging = Logging{
+var defaultLogging = logging{
 	Level:       "INFO",
 	SystemLevel: "ERROR",
 	JSON:        false,

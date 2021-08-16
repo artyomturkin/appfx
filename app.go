@@ -19,7 +19,7 @@ var Module = fx.Options(
 	fx.Provide(appToResource),
 )
 
-type Application struct {
+type application struct {
 	Name        string `validate:"required"`
 	Version     string `validate:"required"`
 	Namespace   string `validate:"required"`
@@ -27,7 +27,7 @@ type Application struct {
 }
 
 func appToResource(config config.Provider) (*resource.Resource, error) {
-	var app Application
+	var app application
 	if err := config.Get("application").Populate(&app); err != nil {
 		return nil, err
 	}

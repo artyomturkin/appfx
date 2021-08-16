@@ -23,22 +23,16 @@ import (
 )
 
 var otelOptions = fx.Options(
-	fx.Invoke(TracerProviderJaeger),
-	fx.Invoke(PrometheusExporter),
+	fx.Invoke(tracerProviderJaeger),
+	fx.Invoke(prometheusExporter),
 )
 
-type Observability struct {
-	Logging Logging `yaml:"logging"`
-	Metrics Metrics `yaml:"metrics"`
-	Tracing Tracing `yaml:"tracing"`
-}
-
-type Tracing struct {
+type tracing struct {
 	Jaeger string `yaml:"jaeger"`
 }
 
-func TracerProviderJaeger(lc fx.Lifecycle, resource *resource.Resource, c config.Provider) error {
-	var cfg Tracing
+func tracerProviderJaeger(lc fx.Lifecycle, resource *resource.Resource, c config.Provider) error {
+	var cfg tracing
 	if err := c.Get("tracing").Populate(&cfg); err != nil {
 		return err
 	}
@@ -68,12 +62,12 @@ func TracerProviderJaeger(lc fx.Lifecycle, resource *resource.Resource, c config
 	return nil
 }
 
-type Metrics struct {
+type metrics struct {
 	Prometheus int `yaml:"prometheus" validate:"required"`
 }
 
-func PrometheusExporter(lc fx.Lifecycle, resource *resource.Resource, cp config.Provider) error {
-	var cfg Metrics
+func prometheusExporter(lc fx.Lifecycle, resource *resource.Resource, cp config.Provider) error {
+	var cfg metrics
 	if err := cp.Get("metrics").Populate(&cfg); err != nil {
 		return err
 	}
