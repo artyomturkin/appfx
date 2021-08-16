@@ -1,0 +1,5 @@
+application:
+  name: example
+  version: v1.0.0
+  namespace: example
+  environment: example

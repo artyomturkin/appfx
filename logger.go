@@ -5,7 +5,28 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/hashicorp/go-hclog"
+	"go.uber.org/config"
 	"go.uber.org/fx"
+)
+
+var loggingOptions = fx.Options(
+	fx.Provide(provideHCLLogger),
+	fx.Provide(watermillLogger),
+	fx.NopLogger,
+	fx.ErrorHook(errHandler{}),
+
+	fx.Invoke(func(lc fx.Lifecycle, logger hclog.Logger) {
+		lc.Append(fx.Hook{
+			OnStart: func(_ context.Context) error {
+				logger.Info("running")
+				return nil
+			},
+			OnStop: func(_ context.Context) error {
+				logger.Info("stopping")
+				return nil
+			},
+		})
+	}),
 )
 
 type Logging struct {
@@ -14,7 +35,26 @@ type Logging struct {
 	JSON        bool   `yaml:"json"`
 }
 
-func provideHCLLogger(config Logging) hclog.Logger {
+var defaultLogging = Logging{
+	Level:       "INFO",
+	SystemLevel: "ERROR",
+	JSON:        false,
+}
+
+type errHandler struct {
+	fx.ErrorHandler
+}
+
+func (e errHandler) HandleError(err error) {
+	hclog.Default().Error("failed to build fx app", "err", err)
+}
+
+func provideHCLLogger(c config.Provider) (hclog.Logger, error) {
+	config := defaultLogging
+	if err := c.Get("logging").Populate(&config); err != nil {
+		return nil, err
+	}
+
 	level := hclog.Info
 
 	switch config.Level {
@@ -31,10 +71,15 @@ func provideHCLLogger(config Logging) hclog.Logger {
 	return hclog.New(&hclog.LoggerOptions{
 		Level:      level,
 		JSONFormat: config.JSON,
-	})
+	}), nil
 }
 
-func watermillLogger(config Logging) watermill.LoggerAdapter {
+func watermillLogger(c config.Provider) (watermill.LoggerAdapter, error) {
+	config := defaultLogging
+	if err := c.Get("logging").Populate(&config); err != nil {
+		return nil, err
+	}
+
 	level := hclog.Error
 
 	switch config.SystemLevel {
@@ -53,7 +98,7 @@ func watermillLogger(config Logging) watermill.LoggerAdapter {
 		JSONFormat: config.JSON,
 	}).Named("system")
 
-	return &hclogAdapter{logger: logger}
+	return &hclogAdapter{logger: logger}, nil
 }
 
 type hclogAdapter struct {
@@ -89,21 +134,3 @@ func (h *hclogAdapter) With(fields watermill.LogFields) watermill.LoggerAdapter 
 
 	return &hclogAdapter{logger: logg}
 }
-
-var loggingOptions = fx.Options(
-	fx.Provide(provideHCLLogger),
-	fx.Provide(watermillLogger),
-
-	fx.Invoke(func(lc fx.Lifecycle, logger hclog.Logger) {
-		lc.Append(fx.Hook{
-			OnStart: func(_ context.Context) error {
-				logger.Info("running")
-				return nil
-			},
-			OnStop: func(_ context.Context) error {
-				logger.Info("stopping")
-				return nil
-			},
-		})
-	}),
-)

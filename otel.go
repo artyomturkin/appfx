@@ -13,6 +13,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/metric/aggregator/histogram"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	"go.uber.org/config"
 	"go.uber.org/fx"
 
 	export "go.opentelemetry.io/otel/sdk/export/metric"
@@ -36,7 +37,12 @@ type Tracing struct {
 	Jaeger string `yaml:"jaeger"`
 }
 
-func TracerProviderJaeger(lc fx.Lifecycle, resource *resource.Resource, cfg Tracing) error {
+func TracerProviderJaeger(lc fx.Lifecycle, resource *resource.Resource, c config.Provider) error {
+	var cfg Tracing
+	if err := c.Get("tracing").Populate(&cfg); err != nil {
+		return err
+	}
+
 	// Create the Jaeger exporter
 	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(cfg.Jaeger)))
 	if err != nil {
@@ -66,7 +72,12 @@ type Metrics struct {
 	Prometheus int `yaml:"prometheus" validate:"required"`
 }
 
-func PrometheusExporter(lc fx.Lifecycle, resource *resource.Resource, cfg Metrics) error {
+func PrometheusExporter(lc fx.Lifecycle, resource *resource.Resource, cp config.Provider) error {
+	var cfg Metrics
+	if err := cp.Get("metrics").Populate(&cfg); err != nil {
+		return err
+	}
+
 	config := prometheus.Config{}
 	c := controller.New(
 		processor.New(
