@@ -24,7 +24,7 @@ func provideConfig() (config.Provider, error) {
 
 		for _, de := range des {
 			if !de.IsDir() && (strings.HasSuffix(de.Name(), ".yml") || strings.HasSuffix(de.Name(), ".yaml")) {
-				files = append(files, config.File(fmt.Sprintf("./%s", de.Name())))
+				files = append(files, config.File(fmt.Sprintf("%s/%s", dir, de.Name())))
 			}
 		}
 
