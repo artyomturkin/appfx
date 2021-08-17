@@ -30,12 +30,15 @@ func router(lc fx.Lifecycle, logger watermill.LoggerAdapter) (*message.Router, e
 		middleware.Recoverer,
 	)
 
+	rctx, cancel := context.WithCancel(context.Background())
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			go func() { router.Run(ctx) }()
+			go func() { router.Run(rctx) }()
 			return nil
 		},
 		OnStop: func(_ context.Context) error {
+			cancel()
 			return router.Close()
 		},
 	})
