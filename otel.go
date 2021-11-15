@@ -10,13 +10,13 @@ import (
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/export/metric/aggregation"
 	"go.opentelemetry.io/otel/sdk/metric/aggregator/histogram"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/config"
 	"go.uber.org/fx"
 
-	export "go.opentelemetry.io/otel/sdk/export/metric"
 	controller "go.opentelemetry.io/otel/sdk/metric/controller/basic"
 	processor "go.opentelemetry.io/otel/sdk/metric/processor/basic"
 	selector "go.opentelemetry.io/otel/sdk/metric/selector/simple"
@@ -74,7 +74,7 @@ func prometheusExporter(lc fx.Lifecycle, resource *resource.Resource, cp config.
 
 	config := prometheus.Config{}
 	c := controller.New(
-		processor.New(
+		processor.NewFactory(
 			selector.NewWithHistogramDistribution(
 				histogram.WithExplicitBoundaries([]float64{
 					// Fast operation
@@ -83,7 +83,7 @@ func prometheusExporter(lc fx.Lifecycle, resource *resource.Resource, cp config.
 					120_000, 300_000, 900_000, 3600_000, 18_000_000, 180_000_000,
 				}),
 			),
-			export.CumulativeExportKindSelector(),
+			aggregation.CumulativeTemporalitySelector(),
 			processor.WithMemory(true),
 		),
 		controller.WithResource(resource),
